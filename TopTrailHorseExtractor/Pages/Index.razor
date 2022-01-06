@@ -1,0 +1,64 @@
+@page "/"
+@using DataJuggler.Blazor.FileUpload
+@using TopTrailHorseExtractor.Models
+
+<PageTitle>Index</PageTitle>
+
+<h1>TopTrailHorse Ride Extractor</h1>
+
+This tool was built to extract data from the top trail ride CSV data files that are provided by <a href="https://www.toptrailhorse.com/">TopTrailHorse.com</a>.
+<br/>
+The owner of this tool and tool itself are in no way affiliated with TopTrailHorse.com and this service is provided for free to users for use along side TopTrailHorse.
+<br/><br/>
+<div>
+    <InputFile OnChange="OnUploadData"/>
+</div>
+<Button onclick="@ToggleYearlyTotals" class="ToggleYearlyButton">View Yearly Totals</Button>
+<hr/>
+@if (String.IsNullOrEmpty(_totalDistance) is not true && _viewYearTotals)
+{
+    <div>Total Distance: @_totalDistance miles</div>
+    <br/>
+    <div>
+        @foreach(string year in Years)
+        {
+            _longestRide = new Ride();
+            <div class="yearHeader">@year</div>
+            @foreach (var ride in RidesSortedByYear[year])
+            {
+                if (_longestRide.Distance < ride.Distance)
+                {
+                    _longestRide = ride;
+                }
+                _totalDistanceForYear += ride.Distance;
+            }
+            <div>Distance Rode: @_totalDistanceForYear.ToString("N2")</div>
+            <div>Longest Rode: @_longestRide?.Distance.ToString("N2")</div>
+            <div>Horse Rode: @_longestRide?.Horse</div>
+            <div>Date Rode: @_longestRide?.RideDate</div>
+            <br/>
+            _totalDistanceForYear = 0;
+        }
+    </div>
+}
+@if(String.IsNullOrEmpty(_totalDistance) is not true) {
+    <div>
+    
+        <select onchange="@PopulateRidesByCurrentlySelectedHorse" name="Horses">
+            @foreach (var horse in HorseNames!)
+            {
+                <option value="@horse">@horse</option>
+            }
+        </select>
+    </div>
+    if (CurrentlySelectedHorseRides is not null)
+    {
+        <div>Totals Rides: @CurrentlySelectedHorseRides.Count</div>
+        <div>Total Miles: @GetTotalMilesByHorse(CurrentlySelectedHorseRides)</div>
+        <div>Miles Breakdown: @GetTotalMilesForYearByHorse()</div>
+        <div>Longest Ride Ever: @GetLongestRodeMiles(CurrentlySelectedHorseRides)</div>
+    }
+    <hr/>
+}
+
+For any questions related to this tool, please contact me at Kodi.Brunson@gmail.com.
